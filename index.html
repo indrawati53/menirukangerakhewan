@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dunia Gerak Hewan - Kelas 1C SD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Fredoka', 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fbcfe8 100%);
+      min-height: 100vh;
+      user-select: none;
+    }
+    
+    .bouncy {
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bouncy:hover {
+      transform: scale(1.06) rotate(-1deg);
+    }
+    .bouncy:active {
+      transform: scale(0.95);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.6); }
+      50% { box-shadow: 0 0 28px rgba(251, 191, 36, 0.9); }
+    }
+
+    .float-anim {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .glow-anim {
+      animation: pulse-glow 2s infinite;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #fbbf24;
+      border-radius: 10px;
+    }
+
+    /* Flip Card Animation */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .flipped {
+      transform: rotateY(180deg);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+  <!-- TOP HEADER & AUDIO CONTROLS -->
+  <header class="bg-white/80 backdrop-blur-md border-b-4 border-amber-300 sticky top-0 z-50 px-4 py-2 shadow-sm">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <!-- Title & Class Badge -->
+      <div class="flex items-center gap-3">
+        <span class="text-3xl float-anim">🐾</span>
+        <div>
+          <h1 class="text-lg md:text-2xl font-black text-amber-600 tracking-wide leading-none">DUNIA GERAK HEWAN</h1>
+          <p class="text-xs md:text-sm font-bold text-slate-500">Kelas 1C SD • Tematik Menyenangkan</p>
+        </div>
+      </div>
+
+      <!-- Stats Bar & Sound Toggle -->
+      <div class="flex items-center gap-3 bg-amber-50 px-3 py-1.5 rounded-2xl border-2 border-amber-200">
+        <div class="flex items-center gap-1.5 font-bold text-sm text-amber-700">
+          <span>⭐</span>
+          <span id="global-score" class="text-base font-extrabold text-amber-600">0</span> Poin
+        </div>
+        <div class="h-4 w-0.5 bg-amber-200"></div>
+        <button id="sound-btn" onclick="toggleSound()" class="text-xl p-1 rounded-xl hover:bg-amber-100 transition" title="Mute/Unmute Suara">
+          🔊
+        </button>
+      </div>
+    </div>
+
+    <!-- Overall Progress Bar -->
+    <div class="max-w-6xl mx-auto mt-2 bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
+      <div id="overall-progress" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-full w-0 transition-all duration-500"></div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="bg-white/90 border-b-2 border-amber-200 shadow-sm sticky top-[60px] z-40">
+    <div class="max-w-6xl mx-auto flex justify-around md:justify-center md:gap-4 p-2 overflow-x-auto text-xs md:text-base font-bold">
+      <button onclick="switchTab('beranda')" id="tab-beranda" class="tab-btn px-3 py-2 rounded-2xl bg-amber-400 text-white shadow-sm flex items-center gap-1.5 bouncy">
+        <span>🏠</span> <span>Beranda</span>
+      </button>
+      <button onclick="switchTab('materi')" id="tab-materi" class="tab-btn px-3 py-2 rounded-2xl text-slate-600 hover:bg-amber-100 flex items-center gap-1.5 bouncy">
+        <span>📚</span> <span>Materi</span>
+      </button>
+      <button onclick="switchTab('simulasi')" id="tab-simulasi" class="tab-btn px-3 py-2 rounded-2xl text-slate-600 hover:bg-amber-100 flex items-center gap-1.5 bouncy">
+        <span>🔬</span> <span>Simulasi</span>
+      </button>
+      <button onclick="switchTab('permainan')" id="tab-permainan" class="tab-btn px-3 py-2 rounded-2xl text-slate-600 hover:bg-amber-100 flex items-center gap-1.5 bouncy">
+        <span>🎮</span> <span>Permainan</span>
+      </button>
+      <button onclick="switchTab('kuis')" id="tab-kuis" class="tab-btn px-3 py-2 rounded-2xl text-slate-600 hover:bg-amber-100 flex items-center gap-1.5 bouncy">
+        <span>📝</span> <span>Kuis</span>
+      </button>
+      <button onclick="switchTab('hasil')" id="tab-hasil" class="tab-btn px-3 py-2 rounded-2xl text-slate-600 hover:bg-amber-100 flex items-center gap-1.5 bouncy">
+        <span>🏆</span> <span>Hasil</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-5xl mx-auto p-4 flex-grow w-full">
+
+    <!-- 1. BERANDA (HOME) -->
+    <section id="sec-beranda" class="tab-content block space-y-6">
+      <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-amber-200 text-center relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 bg-amber-100 rounded-full blur-xl pointer-events-none"></div>
+        <div class="absolute -left-8 -bottom-8 w-32 h-32 bg-sky-100 rounded-full blur-xl pointer-events-none"></div>
+
+        <span class="inline-block text-6xl md:text-7xl mb-2 float-anim">🦁</span>
+        <h2 class="text-2xl md:text-4xl font-extrabold text-amber-600 mb-2">Halo Teman-Teman Kelas 1C! 👋</h2>
+        <p class="text-base md:text-xl text-slate-600 font-semibold max-w-2xl mx-auto">
+          Selamat datang di petualangan seru! Mari belajar menirukan gerak hewan sambil bermain game dan mengumpulkan bintang penghargaan! ✨
+        </p>
+
+        <!-- Learning Objectives Box -->
+        <div class="mt-6 bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 max-w-xl mx-auto text-left">
+          <h3 class="font-bold text-amber-800 text-sm md:text-base mb-1 flex items-center gap-2">
+            🎯 Tujuan Pembelajaran Kita:
+          </h3>
+          <ul class="text-xs md:text-sm text-slate-700 space-y-1 list-disc list-inside font-medium">
+            <li>Siswa dapat menyebutkan macam-macam cara hewan bergerak.</li>
+            <li>Siswa dapat menirukan gerakan hewan seperti melompat, terbang, dan berenang.</li>
+            <li>Siswa dapat mengelompokkan hewan berdasarkan cara geraknya.</li>
+          </ul>
+        </div>
+
+        <!-- Quick Start Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <button onclick="switchTab('materi')" class="p-4 bg-sky-100 hover:bg-sky-200 border-2 border-sky-300 rounded-2xl flex flex-col items-center gap-2 bouncy shadow-sm">
+            <span class="text-4xl">📚</span>
+            <span class="font-bold text-sky-800 text-sm">Belajar Materi</span>
+          </button>
+          <button onclick="switchTab('simulasi')" class="p-4 bg-emerald-100 hover:bg-emerald-200 border-2 border-emerald-300 rounded-2xl flex flex-col items-center gap-2 bouncy shadow-sm">
+            <span class="text-4xl">🔬</span>
+            <span class="font-bold text-emerald-800 text-sm">Laboratorium</span>
+          </button>
+          <button onclick="switchTab('permainan')" class="p-4 bg-pink-100 hover:bg-pink-200 border-2 border-pink-300 rounded-2xl flex flex-col items-center gap-2 bouncy shadow-sm">
+            <span class="text-4xl">🎮</span>
+            <span class="font-bold text-pink-800 text-sm">Main Game</span>
+          </button>
+          <button onclick="switchTab('kuis')" class="p-4 bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 rounded-2xl flex flex-col items-center gap-2 bouncy shadow-sm">
+            <span class="text-4xl">📝</span>
+            <span class="font-bold text-purple-800 text-sm">Isi Kuis</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. MATERI (LEARNING CONTENT) -->
+    <section id="sec-materi" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-sky-200">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="p-3 bg-sky-100 rounded-2xl text-2xl">📚</div>
+          <div>
+            <h2 class="text-2xl font-bold text-sky-700">Materi: Macam-Macam Gerak Hewan</h2>
+            <p class="text-sm text-slate-500 font-semibold">Klik kartu hewan untuk melihat dan mendengarkan penjelasan gerakannya!</p>
+          </div>
+        </div>
+
+        <!-- Interactive Animal Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="materi-cards">
+          <!-- Cards injected via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SIMULASI (INTERACTIVE LAB) -->
+    <section id="sec-simulasi" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-emerald-200">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="p-3 bg-emerald-100 rounded-2xl text-2xl">🔬</div>
+          <div>
+            <h2 class="text-2xl font-bold text-emerald-700">Simulasi: Laboratorium Gerak Hewan</h2>
+            <p class="text-sm text-slate-500 font-semibold">Ubah kondisi habitat dan lihat bagaimana cara hewan bergerak!</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Controls Panel -->
+          <div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-200 space-y-4">
+            <h3 class="font-extrabold text-emerald-800 flex items-center gap-2">
+              <span>⚙️</span> Pengaturan Simulasi
+            </h3>
+
+            <!-- Choose Animal -->
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Hewan:</label>
+              <select id="sim-animal-select" onchange="updateSimulation()" class="w-full p-2.5 rounded-xl border-2 border-emerald-300 font-bold bg-white text-slate-700 focus:outline-none">
+                <option value="katak">🐸 Katak</option>
+                <option value="burung">🐦 Burung</option>
+                <option value="ikan">🐟 Ikan</option>
+                <option value="kelinci">🐰 Kelinci</option>
+                <option value="ular">🐍 Ular</option>
+              </select>
+            </div>
+
+            <!-- Choose Environment -->
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Pilih Lingkungan/Habitat:</label>
+              <select id="sim-env-select" onchange="updateSimulation()" class="w-full p-2.5 rounded-xl border-2 border-emerald-300 font-bold bg-white text-slate-700 focus:outline-none">
+                <option value="darat">🌱 Daratan Rumput</option>
+                <option value="air">🌊 Kolam Air</option>
+                <option value="udara">☁️ Udara Bebas</option>
+              </select>
+            </div>
+
+            <!-- Speed Control -->
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Kecepatan Gerak:</label>
+              <input type="range" id="sim-speed" min="1" max="5" value="2" oninput="updateSimulation()" class="w-full accent-emerald-500">
+            </div>
+
+            <button onclick="playSimAnimation()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl shadow-md bouncy flex items-center justify-center gap-2">
+              <span>▶️</span> Mulai Gerakan
+            </button>
+          </div>
+
+          <!-- Simulation Visual Stage -->
+          <div class="lg:col-span-2 flex flex-col justify-between bg-slate-900 rounded-2xl p-4 min-h-[300px] relative overflow-hidden border-4 border-slate-700" id="sim-stage">
+            <!-- Background Layer -->
+            <div id="sim-bg-layer" class="absolute inset-0 bg-emerald-100 opacity-30 transition-all duration-500 pointer-events-none"></div>
+
+            <!-- Header Stage Info -->
+            <div class="relative z-10 flex justify-between items-center bg-black/40 px-3 py-1.5 rounded-xl text-white text-xs font-bold backdrop-blur-sm">
+              <span id="sim-habitat-tag">Habitat: Daratan</span>
+              <span id="sim-status-tag" class="text-amber-300">Status: Siap</span>
+            </div>
+
+            <!-- Animated Animal Area -->
+            <div class="relative z-10 flex-grow flex items-center justify-center my-6">
+              <div id="sim-animal-sprite" class="text-8xl transition-all duration-300 transform scale-100">
+                🐸
+              </div>
+            </div>
+
+            <!-- Output Cause & Effect Banner -->
+            <div class="relative z-10 bg-white/95 p-4 rounded-xl shadow-lg border-2 border-emerald-400">
+              <h4 id="sim-result-title" class="font-extrabold text-emerald-800 text-sm md:text-base">Hasil Pengamatan:</h4>
+              <p id="sim-result-desc" class="text-xs md:text-sm text-slate-700 font-semibold mt-1">
+                Katak di daratan bergerak dengan cara <strong>Melompat</strong> menggunakan kakinya yang kuat.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PERMAINAN (GAMES HUB) -->
+    <section id="sec-permainan" class="tab-content hidden space-y-6">
+      
+      <!-- Sub-Game Selector Tabs -->
+      <div class="flex justify-center gap-3">
+        <button onclick="switchGameMode('openthebox')" id="btn-game-box" class="px-5 py-2.5 rounded-2xl font-extrabold text-sm md:text-base bg-pink-500 text-white shadow-md bouncy">
+          🎁 Open the Box (10 Kotak)
+        </button>
+        <button onclick="switchGameMode('dragdrop')" id="btn-game-drag" class="px-5 py-2.5 rounded-2xl font-extrabold text-sm md:text-base bg-white text-slate-600 border-2 border-pink-300 hover:bg-pink-50 bouncy">
+          🧩 Pasangkan Gerak (10 Objek)
+        </button>
+      </div>
+
+      <!-- GAME 1: OPEN THE BOX -->
+      <div id="game-openthebox" class="bg-white rounded-3xl p-6 shadow-xl border-4 border-pink-200">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-black text-pink-600">🎁 Permainan Open the Box</h2>
+          <p class="text-sm font-bold text-slate-500">Pilih kotak misteri, tebak gerakannya, dan tirukan secara langsung di rumah/kelas!</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4" id="box-grid">
+          <!-- 10 Boxes injected via JS -->
+        </div>
+
+        <!-- Box Question Modal Overlay -->
+        <div id="box-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+          <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-4 border-pink-400 text-center relative animate-bounce-short">
+            <span id="box-modal-num" class="text-xs font-black bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase">Kotak 1</span>
+            
+            <div id="box-modal-animal" class="text-7xl my-3 float-anim">❓</div>
+            <h3 id="box-modal-question" class="text-lg md:text-xl font-black text-slate-800 mb-4">Bagaimana cara bergerak hewan ini?</h3>
+
+            <div id="box-modal-options" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <!-- Options injected by JS -->
+            </div>
+
+            <!-- Feedback & Explanation Area -->
+            <div id="box-modal-feedback" class="hidden p-4 rounded-2xl mb-4 text-sm font-bold"></div>
+
+            <div class="flex justify-end gap-2">
+              <button onclick="closeBoxModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm">
+                Tutup ✖️
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAME 2: DRAG AND DROP / CLICK MATCH -->
+      <div id="game-dragdrop" class="hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-pink-200">
+        <div class="text-center mb-4">
+          <h2 class="text-2xl font-black text-pink-600">🧩 Pasangkan Hewan & Gerakannya</h2>
+          <p class="text-xs md:text-sm font-bold text-slate-500">Tarik hewan atau <span class="text-pink-600">klik hewan lalu klik kotak tujuan</span> untuk memasangkannya!</p>
+        </div>
+
+        <!-- Animals Sources -->
+        <div class="bg-pink-50 p-4 rounded-2xl border-2 border-pink-200 mb-6">
+          <h3 class="text-xs font-black text-pink-800 uppercase mb-2">Hewan yang Belum Dipasangkan:</h3>
+          <div id="drag-animal-pool" class="flex flex-wrap gap-3 justify-center min-h-[60px]">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- Category Drop Targets -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="drop-targets-container">
+          <!-- Injected via JS -->
+        </div>
+
+        <div class="mt-6 text-center">
+          <button onclick="checkDragDropResults()" class="px-8 py-3 bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-lg rounded-2xl shadow-lg bouncy">
+            ✅ Periksa Jawaban Pasangan
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 5. KUIS (FILL IN THE BLANK) -->
+    <section id="sec-kuis" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 shadow-xl border-4 border-purple-200">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="p-3 bg-purple-100 rounded-2xl text-2xl">📝</div>
+            <div>
+              <h2 class="text-2xl font-bold text-purple-700">Kuis Isian Singkat Interaktif</h2>
+              <p class="text-xs md:text-sm text-slate-500 font-semibold">Lengkapi kalimat rumpang di bawah ini (10 Soal)</p>
+            </div>
+          </div>
+          <span id="quiz-step-indicator" class="text-xs md:text-sm font-extrabold bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full">
+            Soal 1/10
+          </span>
+        </div>
+
+        <!-- Quiz Container Card -->
+        <div class="bg-purple-50 p-6 rounded-2xl border-2 border-purple-200 max-w-2xl mx-auto text-center space-y-6">
+          <div id="quiz-animal-icon" class="text-7xl float-anim">🐟</div>
+          
+          <h3 id="quiz-question-text" class="text-lg md:text-2xl font-black text-slate-800">
+            Ikan bergerak di dalam air dengan cara _________.
+          </h3>
+
+          <!-- Word Options / Keypad Choice -->
+          <div id="quiz-word-bank" class="flex flex-wrap justify-center gap-3">
+            <!-- Option buttons injected via JS -->
+          </div>
+
+          <!-- Direct Feedback Message -->
+          <div id="quiz-feedback" class="hidden p-4 rounded-xl font-bold text-sm"></div>
+
+          <!-- Nav Buttons -->
+          <div class="flex justify-between items-center pt-4 border-t border-purple-200">
+            <button id="quiz-prev-btn" onclick="navQuiz(-1)" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm disabled:opacity-50">
+              ⬅️ Sebelum
+            </button>
+            <button id="quiz-next-btn" onclick="navQuiz(1)" class="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black rounded-xl text-sm bouncy">
+              Berikutnya ➡️
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. HASIL & BADGES (RESULTS) -->
+    <section id="sec-hasil" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-amber-300 text-center space-y-6">
+        <div class="inline-block p-4 bg-amber-100 rounded-full text-5xl mb-2 float-anim">🏆</div>
+        <h2 class="text-3xl font-black text-amber-600">Rapor & Pencapaian Belajar</h2>
+        <p class="text-sm font-bold text-slate-500">Hebat! Inilah hasil petualangan belajar gerak hewan kamu hari ini!</p>
+
+        <!-- Final Score Board -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+          <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200">
+            <span class="text-xs font-extrabold text-amber-700 uppercase">Total Skor</span>
+            <p id="result-total-score" class="text-4xl font-black text-amber-600 mt-1">0</p>
+          </div>
+          <div class="bg-sky-50 p-4 rounded-2xl border-2 border-sky-200">
+            <span class="text-xs font-extrabold text-sky-700 uppercase">Aktivitas Selesai</span>
+            <p id="result-completed-count" class="text-4xl font-black text-sky-600 mt-1">0/30</p>
+          </div>
+          <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-200">
+            <span class="text-xs font-extrabold text-emerald-700 uppercase">Level Predikat</span>
+            <p id="result-level-title" class="text-lg font-black text-emerald-600 mt-2">Pemula</p>
+          </div>
+        </div>
+
+        <!-- Motivational Message Box -->
+        <div id="motivation-box" class="bg-gradient-to-r from-amber-100 to-sky-100 p-4 rounded-2xl border-2 border-amber-300 max-w-2xl mx-auto font-bold text-amber-900 text-sm md:text-base">
+          🌟 "Ayo selesaikan semua game dan kuis untuk membuka semua lencana pahlawan satwa!"
+        </div>
+
+        <!-- Badges Unlocked Section -->
+        <div>
+          <h3 class="text-lg font-black text-slate-700 mb-3">🏅 Lencana Penghargaan Kamu</h3>
+          <div class="flex flex-wrap justify-center gap-4" id="badges-container">
+            <!-- Badges injected via JS -->
+          </div>
+        </div>
+
+        <!-- Self Reflection Prompt for Grade 1 -->
+        <div class="bg-pink-50 p-5 rounded-2xl border-2 border-pink-200 max-w-xl mx-auto space-y-3">
+          <h4 class="font-extrabold text-pink-800 text-sm md:text-base">❤️ Refleksi Diri: Bagaimana Perasaanmu Hari Ini?</h4>
+          <div class="flex justify-center gap-6 text-3xl">
+            <button onclick="selectEmotion('😄')" class="bouncy p-2 hover:bg-pink-200 rounded-full">😄</button>
+            <button onclick="selectEmotion('🥳')" class="bouncy p-2 hover:bg-pink-200 rounded-full">🥳</button>
+            <button onclick="selectEmotion('🤔')" class="bouncy p-2 hover:bg-pink-200 rounded-full">🤔</button>
+            <button onclick="selectEmotion('😴')" class="bouncy p-2 hover:bg-pink-200 rounded-full">😴</button>
+          </div>
+          <p id="emotion-feedback" class="text-xs font-bold text-pink-700 h-4"></p>
+        </div>
+
+        <div class="pt-4 flex justify-center gap-4">
+          <button onclick="resetAllProgress()" class="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold rounded-xl text-sm">
+            🔄 Ulangi Dari Awal
+          </button>
+          <button onclick="triggerConfetti()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-xl text-sm bouncy shadow-md">
+            🎉 Merayakan Kelulusan!
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-white/80 border-t border-amber-200 py-3 text-center text-xs font-bold text-slate-500 mt-8">
+    Media Pembelajaran Interaktif Tematik SD Kelas 1C • Materi: Menirukan Gerak Hewan 🐾
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    /* ===================================================
+       1. DATA STRUCTURES & DATASETS
+       =================================================== */
+
+    // Sound Effects Engine using Web Audio API (No External Audio dependencies)
+    const AudioEngine = {
+      ctx: null,
+      muted: false,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      },
+      playTone(freq, type, duration) {
+        if (this.muted) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type || 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      },
+      playCorrect() {
+        this.playTone(523.25, 'sine', 0.15); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.15), 100); // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.3), 200); // G5
+      },
+      playWrong() {
+        this.playTone(220, 'sawtooth', 0.2);
+        setTimeout(() => this.playTone(180, 'sawtooth', 0.3), 150);
+      },
+      playPop() {
+        this.playTone(400, 'sine', 0.08);
+      },
+      playWin() {
+        [400, 500, 600, 800, 1000].forEach((f, i) => {
+          setTimeout(() => this.playTone(f, 'triangle', 0.2), i * 80);
+        });
+      }
+    };
+
+    function toggleSound() {
+      AudioEngine.muted = !AudioEngine.muted;
+      document.getElementById('sound-btn').innerText = AudioEngine.muted ? '🔇' : '🔊';
+    }
+
+    // Materi Dataset
+    const materiData = [
+      { id: 1, name: 'Burung', emoji: '🐦', action: 'Terbang', desc: 'Burung terbang di udara menggunakan dua sayapnya dengan cara mengepakkan sayap.' },
+      { id: 2, name: 'Katak', emoji: '🐸', action: 'Melompat', desc: 'Katak melompat di darat menggunakan paha dan kaki belakangnya yang sangat kuat.' },
+      { id: 3, name: 'Ikan', emoji: '🐟', action: 'Berenang', desc: 'Ikan berenang di dalam air dengan menggoyangkan tubuh dan siripnya.' },
+      { id: 4, name: 'Kelinci', emoji: '🐰', action: 'Melompat', desc: 'Kelinci bergerak melompat-lompat kecil dengan telinga panjang yang tegak.' },
+      { id: 5, name: 'Ular', emoji: '🐍', action: 'Merayap / Melata', desc: 'Ular tidak memiliki kaki. Ular melata di tanah menggunakan otot perutnya.' },
+      { id: 6, name: 'Kucing', emoji: '🐱', action: 'Berjalan & Berlari', desc: 'Kucing berjalan pelan dan menapak secara anggun menggunakan empat kakinya.' },
+      { id: 7, name: 'Bebek', emoji: '🦆', action: 'Berjalan Bergoyang', desc: 'Bebek berjalan melangkah ke depan sambil menggoyangkan pinggulnya ke kiri dan kanan.' },
+      { id: 8, name: 'Kupu-kupu', emoji: '🦋', action: 'Terbang Pelan', desc: 'Kupu-kupu terbang hinggap secara anggun dari satu bunga ke bunga lainnya.' },
+      { id: 9, name: 'Kanguru', emoji: '🦘', action: 'Melompat Jauh', desc: 'Kanguru melompat tinggi dan jauh menggunakan dua kaki belakang yang tangguh.' },
+      { id: 10, name: 'Kura-kura', emoji: '🐢', action: 'Berjalan Lambat', desc: 'Kura-kura berjalan sangat perlahan sambil membawa cangkang berat di punggungnya.' }
+    ];
+
+    // Open the Box Dataset (10 Items)
+    const boxData = [
+      { id: 1, animal: 'Burung 🐦', action: 'Terbang', options: ['Terbang dengan sayap', 'Berenang di air', 'Merayap di tanah'], correct: 0, prompt: 'Ayo kepakkan kedua tanganmu seperti sayap burung!' },
+      { id: 2, animal: 'Katak 🐸', action: 'Melompat', options: ['Terbang tinggi', 'Melompat dengan kaki belakang', 'Berjalan lambat'], correct: 1, prompt: 'Ayo bungkukkan badan dan melompatlah seperti katak!' },
+      { id: 3, animal: 'Ikan 🐟', action: 'Berenang', options: ['Berenang meliuk-liuk', 'Melompat di rumput', 'Terbang di awan'], correct: 0, prompt: 'Ayo tangkupkan kedua tangan dan liukkan badanmu!' },
+      { id: 4, animal: 'Kelinci 🐰', action: 'Melompat', options: ['Merayap melata', 'Melompat dengan telinga tegak', 'Berenang bebas'], correct: 1, prompt: 'Taruh dua jari di kepala seperti telinga kelinci lalu melompat!' },
+      { id: 5, animal: 'Ular 🐍', action: 'Merayap', options: ['Merayap tanpa kaki', 'Berjalan dengan 4 kaki', 'Terbang santai'], correct: 0, prompt: 'Gerakkan tanganmu meliuk-liuk seperti ular melata!' },
+      { id: 6, animal: 'Kucing 🐱', action: 'Berjalan', options: ['Berenang meliuk', 'Berjalan pelan dengan 4 kaki', 'Terbang tinggi'], correct: 1, prompt: 'Merangkaklah pelan dan buat suara "Meong!"' },
+      { id: 7, animal: 'Bebek 🦆', action: 'Berjalan Bergoyang', options: ['Berjalan bergoyang ke kiri-kanan', 'Melompat tinggi', 'Merayap di tembok'], correct: 0, prompt: 'Pegang pinggulmu dan berjalanlah bergoyang miring-miring!' },
+      { id: 8, animal: 'Kupu-kupu 🦋', action: 'Terbang Pelan', options: ['Berenang cepat', 'Terbang kepak pelan ke bunga', 'Melompat tinggi'], correct: 1, prompt: 'Kepakkan tangan secara perlahan dan lembut!' },
+      { id: 9, animal: 'Kanguru 🦘', action: 'Melompat Jauh', options: ['Melompat jauh ke depan', 'Merayap di tanah', 'Berenang di kolam'], correct: 0, prompt: 'Ayo melompat tinggi dan jauh ke depan!' },
+      { id: 10, animal: 'Kura-kura 🐢', action: 'Berjalan Lambat', options: ['Terbang cepat', 'Berjalan sangat lambat', 'Melompat-lompat'], correct: 1, prompt: 'Berjalanlah sangat lambat sambil membungkuk!' }
+    ];
+
+    // Drag and Drop / Tap Match Dataset (10 Animals)
+    const dragAnimals = [
+      { id: 'd1', name: 'Burung 🐦', cat: 'terbang' },
+      { id: 'd2', name: 'Katak 🐸', cat: 'melompat' },
+      { id: 'd3', name: 'Ikan 🐟', cat: 'berenang' },
+      { id: 'd4', name: 'Kelinci 🐰', cat: 'melompat' },
+      { id: 'd5', name: 'Ular 🐍', cat: 'merayap' },
+      { id: 'd6', name: 'Kucing 🐱', cat: 'berjalan' },
+      { id: 'd7', name: 'Bebek 🦆', cat: 'berjalan' },
+      { id: 'd8', name: 'Kupu-kupu 🦋', cat: 'terbang' },
+      { id: 'd9', name: 'Kanguru 🦘', cat: 'melompat' },
+      { id: 'd10', name: 'Kura-kura 🐢', cat: 'berjalan' }
+    ];
+
+    const dragCategories = [
+      { id: 'terbang', label: '🪶 Terbang', bg: 'bg-sky-100 border-sky-300' },
+      { id: 'melompat', label: '🦘 Melompat', bg: 'bg-emerald-100 border-emerald-300' },
+      { id: 'berenang', label: '🌊 Berenang', bg: 'bg-blue-100 border-blue-300' },
+      { id: 'merayap', label: '🌿 Merayap/Melata', bg: 'bg-amber-100 border-amber-300' },
+      { id: 'berjalan', label: '🐾 Berjalan', bg: 'bg-orange-100 border-orange-300' }
+    ];
+
+    // Fill in the Blank Quiz Dataset (10 Questions)
+    const quizData = [
+      { id: 1, emoji: '🐟', text: 'Ikan bergerak di dalam air dengan cara _________.', options: ['berenang', 'terbang', 'melompat'], correct: 'berenang', explanation: 'Ikan memiliki sirip dan ekor untuk berenang di air.' },
+      { id: 2, emoji: '🐦', text: 'Burung di udara bergerak dengan cara _________ sayapnya.', options: ['mengepakkan', 'menendang', 'menggigit'], correct: 'mengepakkan', explanation: 'Sayap burung mengepak naik turun agar bisa terbang.' },
+      { id: 3, emoji: '🐸', text: 'Katak berpindah tempat di darat dengan cara _________.', options: ['melompat', 'merayap', 'terbang'], correct: 'melompat', explanation: 'Katak punya kaki belakang yang panjang dan kuat untuk melompat.' },
+      { id: 4, emoji: '🐍', text: 'Ular bergerak melata di tanah tanpa kaki dengan cara _________.', options: ['merayap', 'berjalan', 'terbang'], correct: 'merayap', explanation: 'Ular menggunakan otot tubuhnya untuk merayap.' },
+      { id: 5, emoji: '🐰', text: 'Kelinci bergerak cepat dengan cara _________ di rumput.', options: ['melompat', 'berenang', 'merayap'], correct: 'melompat', explanation: 'Kelinci melompat-lompat dengan lincah.' },
+      { id: 6, emoji: '🦆', text: 'Bebek berjalan sambil _________ badan ke kiri dan kanan.', options: ['bergoyang', 'mencakar', 'tertidur'], correct: 'bergoyang', explanation: 'Gaya berjalan bebek sangat lucu dan bergoyang-goyang.' },
+      { id: 7, emoji: '🦋', text: 'Kupu-kupu _________ cantik dari satu bunga ke bunga lain.', options: ['terbang', 'berenang', 'merayap'], correct: 'terbang', explanation: 'Kupu-kupu menggunakan sayap indahnya untuk terbang.' },
+      { id: 8, emoji: '🐱', text: 'Kucing menapak tanah menggunakan empat kaki dengan cara _________.', options: ['berjalan', 'terbang', 'berenang'], correct: 'berjalan', explanation: 'Kucing berjalan halus menapak dengan 4 kakinya.' },
+      { id: 9, emoji: '🦘', text: 'Kanguru melompat tinggi menggunakan dua kaki _________.', options: ['belakang', 'depan', 'sayap'], correct: 'belakang', explanation: 'Kaki belakang kanguru sangat besar dan kokoh.' },
+      { id: 10, emoji: '🐢', text: 'Kura-kura bergerak dengan sangat _________ di tanah.', options: ['lambat', 'cepat', 'kilat'], correct: 'lambat', explanation: 'Kura-kura berjalan lambat karena membawa cangkang.' }
+    ];
+
+    // Global State Tracking
+    let state = {
+      score: 0,
+      openedBoxes: new Set(),
+      matchedDragCount: 0,
+      quizCurrentIdx: 0,
+      quizAnswers: {},
+      badges: {
+        sahabat: false,
+        masterLompat: false,
+        pakarGerak: false,
+        detektif: false
+      }
+    };
+
+    let selectedTapAnimal = null;
+
+    /* ===================================================
+       2. INITIALIZATION & NAVIGATION
+       =================================================== */
+
+    window.onload = function() {
+      renderMateri();
+      renderBoxes();
+      renderDragDrop();
+      renderQuizQuestion();
+      renderBadges();
+      updateSimulation();
+    };
+
+    function switchTab(tabId) {
+      AudioEngine.playPop();
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('bg-amber-400', 'text-white');
+        el.classList.add('text-slate-600');
+      });
+
+      document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      activeBtn.classList.add('bg-amber-400', 'text-white');
+      activeBtn.classList.remove('text-slate-600');
+
+      if(tabId === 'hasil') updateResultsView();
+    }
+
+    function addScore(pts) {
+      state.score += pts;
+      document.getElementById('global-score').innerText = state.score;
+      updateProgressBar();
+    }
+
+    function updateProgressBar() {
+      // Total 30 sub-activities (10 boxes, 10 drag matches, 10 quiz items)
+      const totalTasks = 30;
+      const completed = state.openedBoxes.size + state.matchedDragCount + Object.keys(state.quizAnswers).length;
+      const pct = Math.min(100, Math.round((completed / totalTasks) * 100));
+      document.getElementById('overall-progress').style.width = `${pct}%`;
+    }
+
+    /* ===================================================
+       3. MODULE: MATERI
+       =================================================== */
+
+    function renderMateri() {
+      const container = document.getElementById('materi-cards');
+      container.innerHTML = materiData.map(item => `
+        <div onclick="flipCard(this)" class="perspective-1000 h-48 cursor-pointer group">
+          <div class="card-inner relative w-full h-full transform-style-3d border-2 border-sky-200 rounded-2xl shadow-sm bg-sky-50 group-hover:border-sky-400 transition-all">
+            <!-- Front -->
+            <div class="absolute inset-0 backface-hidden p-4 flex flex-col items-center justify-center text-center">
+              <span class="text-6xl mb-2 float-anim">${item.emoji}</span>
+              <h3 class="font-extrabold text-lg text-sky-800">${item.name}</h3>
+              <span class="text-xs font-bold text-sky-600 bg-white px-2.5 py-1 rounded-full border border-sky-200 mt-1">
+                Cara Gerak: ${item.action}
+              </span>
+              <span class="text-[10px] text-slate-400 mt-2 font-bold">Tekan untuk penjelasan 👆</span>
+            </div>
+            <!-- Back -->
+            <div class="absolute inset-0 backface-hidden rotate-y-180 p-4 bg-sky-600 text-white rounded-2xl flex flex-col items-center justify-center text-center">
+              <p class="text-xs md:text-sm font-bold leading-relaxed">${item.desc}</p>
+              <button onclick="event.stopPropagation(); AudioEngine.playCorrect();" class="mt-3 text-xs bg-amber-300 text-amber-900 px-3 py-1 rounded-full font-black">
+                🔊 Dengar Gerakan
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function flipCard(cardEl) {
+      AudioEngine.playPop();
+      const inner = cardEl.querySelector('.card-inner');
+      inner.classList.toggle('flipped');
+    }
+
+    /* ===================================================
+       4. MODULE: SIMULASI (LABORATORIUM)
+       =================================================== */
+
+    const simMatrix = {
+      katak: {
+        darat: { action: 'Melompat 🦘', desc: 'Katak di daratan melompat tinggi dengan kaki belakangnya yang sangat kuat.', emoji: '🐸', animClass: 'animate-bounce' },
+        air: { action: 'Berenang 🌊', desc: 'Katak di air meliukkan kaki selaputnya untuk berenang lincah.', emoji: '🐸', animClass: 'animate-pulse' },
+        udara: { action: 'Tidak Bisa Terbang ❌', desc: 'Katak tidak memiliki sayap, sehingga jatuh jika berada di udara!', emoji: '🐸💦', animClass: 'animate-ping' }
+      },
+      burung: {
+        darat: { action: 'Berjalan Kecil 🐾', desc: 'Burung di darat meloncat atau berjalan dengan dua kaki kecilnya.', emoji: '🐦', animClass: 'animate-bounce' },
+        air: { action: 'Mengapung 🦆', desc: 'Hanya sebagian burung berkaki selaput yang bisa mengapung di air.', emoji: '🐦💦', animClass: 'animate-pulse' },
+        udara: { action: 'Terbang Tinggi 🪶', desc: 'Udara adalah tempat burung mengepakkan sayap dan terbang bebas!', emoji: '🦅', animClass: 'animate-bounce' }
+      },
+      ikan: {
+        darat: { action: 'Melompat Lemah ⚠️', desc: 'Ikan tidak bisa berjalan di darat, ia hanya bisa menggelepar.', emoji: '🐟', animClass: 'animate-ping' },
+        air: { action: 'Berenang Lincah 🌊', desc: 'Air adalah habitat asli ikan! Ia berenang bebas menggunakan sirip.', emoji: '🐠', animClass: 'animate-pulse' },
+        udara: { action: 'Tidak Bisa ❌', desc: 'Ikan tidak bisa berada di udara bebas!', emoji: '🐟', animClass: 'animate-ping' }
+      },
+      kelinci: {
+        darat: { action: 'Melompat Cepat 🐰', desc: 'Kelinci sangat senang melompat-lompat di padang rumput daratan.', emoji: '🐰', animClass: 'animate-bounce' },
+        air: { action: 'Berusaha Berenang 💦', desc: 'Kelinci kurang suka air dan akan berusaha segera ke tepi.', emoji: '🐰', animClass: 'animate-pulse' },
+        udara: { action: 'Tidak Bisa Terbang ❌', desc: 'Kelinci tidak memiliki sayap untuk terbang.', emoji: '🐰', animClass: 'animate-ping' }
+      },
+      ular: {
+        darat: { action: 'Merayap Melata 🐍', desc: 'Ular merayap halus di atas permukaan tanah rumput.', emoji: '🐍', animClass: 'animate-pulse' },
+        air: { action: 'Berenang Meliuk 🌊', desc: 'Ular sangat pandai berenang meliukkan tubuhnya di air.', emoji: '🐍', animClass: 'animate-pulse' },
+        udara: { action: 'Tidak Bisa ❌', desc: 'Ular tidak memiliki sayap.', emoji: '🐍', animClass: 'animate-ping' }
+      }
+    };
+
+    function updateSimulation() {
+      const animal = document.getElementById('sim-animal-select').value;
+      const env = document.getElementById('sim-env-select').value;
+      const data = simMatrix[animal][env];
+
+      const stage = document.getElementById('sim-bg-layer');
+      if (env === 'darat') stage.className = "absolute inset-0 bg-emerald-200 opacity-40 transition-all duration-500";
+      else if (env === 'air') stage.className = "absolute inset-0 bg-sky-300 opacity-50 transition-all duration-500";
+      else stage.className = "absolute inset-0 bg-indigo-200 opacity-30 transition-all duration-500";
+
+      document.getElementById('sim-habitat-tag').innerText = `Habitat: ${env.toUpperCase()}`;
+      document.getElementById('sim-animal-sprite').innerText = data.emoji;
+      document.getElementById('sim-result-title').innerText = `Cara Gerak: ${data.action}`;
+      document.getElementById('sim-result-desc').innerText = data.desc;
+    }
+
+    function playSimAnimation() {
+      AudioEngine.playPop();
+      const speed = document.getElementById('sim-speed').value;
+      const sprite = document.getElementById('sim-animal-sprite');
+      const animal = document.getElementById('sim-animal-select').value;
+      const env = document.getElementById('sim-env-select').value;
+      const data = simMatrix[animal][env];
+
+      document.getElementById('sim-status-tag').innerText = "Status: Bergerak!";
+      sprite.className = `text-8xl transition-all ${data.animClass}`;
+      sprite.style.animationDuration = `${0.8 / speed}s`;
+
+      setTimeout(() => {
+        sprite.className = "text-8xl transition-all scale-100";
+        document.getElementById('sim-status-tag').innerText = "Status: Siap";
+      }, 2500);
+    }
+
+    /* ===================================================
+       5. MODULE: PERMAINAN (GAME HUB)
+       =================================================== */
+
+    function switchGameMode(mode) {
+      AudioEngine.playPop();
+      if (mode === 'openthebox') {
+        document.getElementById('game-openthebox').classList.remove('hidden');
+        document.getElementById('game-dragdrop').classList.add('hidden');
+        document.getElementById('btn-game-box').className = "px-5 py-2.5 rounded-2xl font-extrabold text-sm md:text-base bg-pink-500 text-white shadow-md bouncy";
+        document.getElementById('btn-game-drag').className = "px-5 py-2.5 rounded-2xl font-extrabold text-sm md:text-base bg-white text-slate-600 border-2 border-pink-300 hover:bg-pink-50 bouncy";
+      } else {
+        document.getElementById('game-openthebox').classList.add('hidden');
+        document.getElementById('game-dragdrop').classList.remove('hidden');
+        document.getElementById('btn-game-drag').className = "px-5 py-2.5 rounded-2xl font-extrabold text-sm md:text-base bg-pink-500 text-white shadow-md bouncy";
+        document.getElementById('btn-game-box').className = "px-5 py-2.5 rounded-2xl font-extrabold text-sm md:text-base bg-white text-slate-600 border-2 border-pink-300 hover:bg-pink-50 bouncy";
+      }
+    }
+
+    // GAME 1: OPEN THE BOX
+    function renderBoxes() {
+      const grid = document.getElementById('box-grid');
+      grid.innerHTML = boxData.map(box => {
+        const isOpened = state.openedBoxes.has(box.id);
+        return `
+          <button onclick="openBoxModal(${box.id})" 
+            class="h-28 rounded-2xl font-black text-lg flex flex-col items-center justify-center gap-1 border-4 transition-all bouncy shadow-md ${
+              isOpened ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-gradient-to-br from-pink-400 to-rose-400 border-pink-200 text-white'
+            }">
+            <span class="text-3xl">${isOpened ? '✅' : '🎁'}</span>
+            <span>Kotak ${box.id}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    let activeBoxId = null;
+
+    function openBoxModal(id) {
+      AudioEngine.playPop();
+      activeBoxId = id;
+      const data = boxData.find(b => b.id === id);
+      
+      document.getElementById('box-modal-num').innerText = `KOTAK MISTERI NO. ${data.id}`;
+      document.getElementById('box-modal-animal').innerText = data.animal.split(' ')[1] || '❓';
+      document.getElementById('box-modal-question').innerText = `Bagaimana cara bergerak hewan ${data.animal}?`;
+
+      const optionsContainer = document.getElementById('box-modal-options');
+      optionsContainer.innerHTML = data.options.map((opt, idx) => `
+        <button onclick="submitBoxAnswer(${idx})" class="p-3 bg-pink-50 hover:bg-pink-100 border-2 border-pink-300 rounded-xl font-bold text-slate-700 text-sm md:text-base text-left bouncy">
+          ${String.fromCharCode(65 + idx)}. ${opt}
+        </button>
+      `).join('');
+
+      document.getElementById('box-modal-feedback').className = "hidden p-4 rounded-2xl mb-4 text-sm font-bold";
+      document.getElementById('box-modal').classList.remove('hidden');
+    }
+
+    function submitBoxAnswer(optIdx) {
+      const data = boxData.find(b => b.id === activeBoxId);
+      const fb = document.getElementById('box-modal-feedback');
+      fb.classList.remove('hidden');
+
+      if (optIdx === data.correct) {
+        AudioEngine.playCorrect();
+        fb.className = "p-4 bg-emerald-100 border-2 border-emerald-400 text-emerald-800 rounded-2xl mb-4 text-sm font-bold animate-pulse";
+        fb.innerHTML = `
+          🎉 <strong>BENAR SEKALI!</strong> +10 Poin<br/>
+          <span class="text-xs font-semibold">${data.animal} bergerak dengan cara ${data.action}.</span>
+          <div class="mt-2 p-2 bg-white/80 rounded-xl text-pink-700 font-extrabold text-xs">
+            🤸 Tantangan Fisik: "${data.prompt}"
+          </div>
+        `;
+        if (!state.openedBoxes.has(data.id)) {
+          state.openedBoxes.add(data.id);
+          addScore(10);
+          renderBoxes();
+        }
+      } else {
+        AudioEngine.playWrong();
+        fb.className = "p-4 bg-rose-100 border-2 border-rose-400 text-rose-800 rounded-2xl mb-4 text-sm font-bold";
+        fb.innerHTML = `❌ <strong>Hampir Benar!</strong> Coba ingat kembali bagaimana ${data.animal} bergerak ya! 😊`;
+      }
+    }
+
+    function closeBoxModal() {
+      AudioEngine.playPop();
+      document.getElementById('box-modal').classList.add('hidden');
+    }
+
+    // GAME 2: DRAG AND DROP / TAP MATCHING
+    function renderDragDrop() {
+      const pool = document.getElementById('drag-animal-pool');
+      pool.innerHTML = dragAnimals.map(item => `
+        <div id="${item.id}" 
+          draggable="true" 
+          ondragstart="handleDragStart(event)" 
+          onclick="handleTapSelect('${item.id}')"
+          class="drag-item cursor-pointer px-3 py-2 bg-white border-2 border-pink-300 hover:border-pink-500 rounded-xl font-extrabold text-xs md:text-sm text-slate-700 shadow-sm bouncy flex items-center gap-1">
+          <span>${item.name}</span>
+        </div>
+      `).join('');
+
+      const targetContainer = document.getElementById('drop-targets-container');
+      targetContainer.innerHTML = dragCategories.map(cat => `
+        <div ondragover="handleDragOver(event)" 
+          ondrop="handleDrop(event, '${cat.id}')"
+          onclick="handleTapDrop('${cat.id}')"
+          id="target-${cat.id}"
+          class="${cat.bg} p-4 rounded-2xl border-2 min-h-[120px] flex flex-col gap-2">
+          <h4 class="font-extrabold text-slate-800 text-sm border-b border-black/10 pb-1">${cat.label}</h4>
+          <div class="dropped-items flex flex-wrap gap-2 text-xs"></div>
+        </div>
+      `).join('');
+    }
+
+    function handleDragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.id);
+    }
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+    function handleDrop(e, catId) {
+      e.preventDefault();
+      const itemId = e.dataTransfer.getData('text/plain');
+      placeAnimalInCategory(itemId, catId);
+    }
+
+    // Tap Fallback for Mobile
+    function handleTapSelect(itemId) {
+      AudioEngine.playPop();
+      document.querySelectorAll('.drag-item').forEach(el => el.classList.remove('ring-4', 'ring-pink-400'));
+      selectedTapAnimal = itemId;
+      const el = document.getElementById(itemId);
+      if (el) el.classList.add('ring-4', 'ring-pink-400');
+    }
+
+    function handleTapDrop(catId) {
+      if (selectedTapAnimal) {
+        AudioEngine.playPop();
+        placeAnimalInCategory(selectedTapAnimal, catId);
+        selectedTapAnimal = null;
+        document.querySelectorAll('.drag-item').forEach(el => el.classList.remove('ring-4', 'ring-pink-400'));
+      }
+    }
+
+    function placeAnimalInCategory(itemId, catId) {
+      const itemEl = document.getElementById(itemId);
+      const targetEl = document.querySelector(`#target-${catId} .dropped-items`);
+      if (itemEl && targetEl) {
+        targetEl.appendChild(itemEl);
+      }
+    }
+
+    function checkDragDropResults() {
+      let correct = 0;
+      dragCategories.forEach(cat => {
+        const container = document.querySelector(`#target-${cat.id} .dropped-items`);
+        const children = container.querySelectorAll('.drag-item');
+        children.forEach(child => {
+          const data = dragAnimals.find(a => a.id === child.id);
+          if (data && data.cat === cat.id) {
+            correct++;
+            child.className = "drag-item px-2 py-1 bg-emerald-200 border-2 border-emerald-400 rounded-lg text-xs font-bold text-emerald-900";
+          } else {
+            child.className = "drag-item px-2 py-1 bg-rose-200 border-2 border-rose-400 rounded-lg text-xs font-bold text-rose-900";
+          }
+        });
+      });
+
+      if (correct > state.matchedDragCount) {
+        const diff = correct - state.matchedDragCount;
+        state.matchedDragCount = correct;
+        addScore(diff * 10);
+      }
+
+      if (correct === 10) {
+        AudioEngine.playWin();
+        alert("🎉 Luar biasa! Semua 10 hewan berhasil dipasangkan dengan tepat!");
+      } else {
+        AudioEngine.playCorrect();
+        alert(`Kamu berhasil memasangkan ${correct} dari 10 hewan secara tepat! Ayo perbaiki yang merah! 😊`);
+      }
+    }
+
+    /* ===================================================
+       6. MODULE: KUIS (FILL IN THE BLANK)
+       =================================================== */
+
+    function renderQuizQuestion() {
+      const q = quizData[state.quizCurrentIdx];
+      document.getElementById('quiz-step-indicator').innerText = `Soal ${q.id} / ${quizData.length}`;
+      document.getElementById('quiz-animal-icon').innerText = q.emoji;
+      document.getElementById('quiz-question-text').innerText = q.text;
+
+      const bank = document.getElementById('quiz-word-bank');
+      bank.innerHTML = q.options.map(opt => `
+        <button onclick="submitQuizAnswer('${opt}')" class="px-5 py-2.5 bg-white border-2 border-purple-300 hover:bg-purple-100 rounded-2xl font-extrabold text-slate-700 text-sm md:text-base bouncy shadow-sm">
+          ${opt}
+        </button>
+      `).join('');
+
+      const fb = document.getElementById('quiz-feedback');
+      if (state.quizAnswers[q.id]) {
+        const ans = state.quizAnswers[q.id];
+        fb.classList.remove('hidden');
+        if (ans.isCorrect) {
+          fb.className = "p-3 bg-emerald-100 border border-emerald-400 text-emerald-800 rounded-xl text-xs font-bold";
+          fb.innerText = `✅ Jawaban kamu tepat: "${ans.chosen}"`;
+        } else {
+          fb.className = "p-3 bg-rose-100 border border-rose-400 text-rose-800 rounded-xl text-xs font-bold";
+          fb.innerText = `❌ Jawaban kamu sebelumnya kurang tepat. Jawaban benar: "${q.correct}"`;
+        }
+      } else {
+        fb.classList.add('hidden');
+      }
+
+      document.getElementById('quiz-prev-btn').disabled = state.quizCurrentIdx === 0;
+    }
+
+    function submitQuizAnswer(chosenWord) {
+      const q = quizData[state.quizCurrentIdx];
+      const isCorrect = (chosenWord === q.correct);
+      const fb = document.getElementById('quiz-feedback');
+      fb.classList.remove('hidden');
+
+      if (isCorrect) {
+        AudioEngine.playCorrect();
+        fb.className = "p-4 bg-emerald-100 border-2 border-emerald-400 text-emerald-800 rounded-xl text-xs md:text-sm font-bold animate-pulse";
+        fb.innerHTML = `🎉 <strong>BENAR!</strong> +10 Poin<br/><span class="font-normal">${q.explanation}</span>`;
+
+        if (!state.quizAnswers[q.id]) {
+          state.quizAnswers[q.id] = { chosen: chosenWord, isCorrect: true };
+          addScore(10);
+        }
+      } else {
+        AudioEngine.playWrong();
+        fb.className = "p-4 bg-rose-100 border-2 border-rose-400 text-rose-800 rounded-xl text-xs md:text-sm font-bold";
+        fb.innerHTML = `❌ <strong>Kurang Tepat!</strong> Ayo coba pilih kata lain yang lebih cocok ya! 😊`;
+        state.quizAnswers[q.id] = { chosen: chosenWord, isCorrect: false };
+      }
+    }
+
+    function navQuiz(dir) {
+      AudioEngine.playPop();
+      state.quizCurrentIdx += dir;
+      if (state.quizCurrentIdx < 0) state.quizCurrentIdx = 0;
+      if (state.quizCurrentIdx >= quizData.length) state.quizCurrentIdx = quizData.length - 1;
+      renderQuizQuestion();
+    }
+
+    /* ===================================================
+       7. MODULE: HASIL & BADGES
+       =================================================== */
+
+    const badgesList = [
+      { id: 'sahabat', name: 'Sahabat Satwa', icon: '🐾', req: 'Buka 5 Kotak Misteri' },
+      { id: 'masterLompat', name: 'Master Melompat', icon: '🦘', req: 'Pasangkan 5 Hewan' },
+      { id: 'pakarGerak', name: 'Pakar Gerak Hewan', icon: '🎓', req: 'Jawab 5 Kuis' },
+      { id: 'detektif', name: 'Detektif Alam', icon: '🔍', req: 'Skor Minimal 150' }
+    ];
+
+    function updateResultsView() {
+      // Calculate Stats
+      const totalTasks = state.openedBoxes.size + state.matchedDragCount + Object.keys(state.quizAnswers).length;
+      document.getElementById('result-total-score').innerText = state.score;
+      document.getElementById('result-completed-count').innerText = `${totalTasks}/30`;
+
+      // Level Title
+      let level = "Pemula 🐣";
+      if (state.score >= 200) level = "Pakar Satwa 🦁";
+      else if (state.score >= 100) level = "Penjelajah Hutan 🦊";
+      else if (state.score >= 50) level = "Penyayang Hewan 🐰";
+      document.getElementById('result-level-title').innerText = level;
+
+      // Update Badges unlock status
+      if (state.openedBoxes.size >= 5) state.badges.sahabat = true;
+      if (state.matchedDragCount >= 5) state.badges.masterLompat = true;
+      if (Object.keys(state.quizAnswers).length >= 5) state.badges.pakarGerak = true;
+      if (state.score >= 150) state.badges.detektif = true;
+
+      renderBadges();
+    }
+
+    function renderBadges() {
+      const container = document.getElementById('badges-container');
+      container.innerHTML = badgesList.map(b => {
+        const unlocked = state.badges[b.id];
+        return `
+          <div class="p-4 rounded-2xl border-2 max-w-[160px] text-center flex flex-col items-center gap-1.5 transition-all ${
+            unlocked ? 'bg-amber-100 border-amber-400 text-amber-900 shadow-sm' : 'bg-slate-100 border-slate-300 text-slate-400 opacity-60'
+          }">
+            <span class="text-4xl">${unlocked ? b.icon : '🔒'}</span>
+            <span class="font-extrabold text-xs">${b.name}</span>
+            <span class="text-[10px] font-semibold">${b.req}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectEmotion(emo) {
+      AudioEngine.playPop();
+      document.getElementById('emotion-feedback').innerText = `Terima kasih! Kamu merasa ${emo} saat belajar hari ini! Tetap semangat ya! 🎉`;
+    }
+
+    function resetAllProgress() {
+      if (confirm("Apakah kamu yakin ingin mengulang seluruh permainan dari awal?")) {
+        AudioEngine.playPop();
+        state.score = 0;
+        state.openedBoxes.clear();
+        state.matchedDragCount = 0;
+        state.quizCurrentIdx = 0;
+        state.quizAnswers = {};
+        Object.keys(state.badges).forEach(k => state.badges[k] = false);
+
+        document.getElementById('global-score').innerText = '0';
+        updateProgressBar();
+        renderBoxes();
+        renderDragDrop();
+        renderQuizQuestion();
+        renderBadges();
+        switchTab('beranda');
+      }
+    }
+
+    function triggerConfetti() {
+      AudioEngine.playWin();
+      if (window.confetti) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
